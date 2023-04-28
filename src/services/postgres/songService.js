@@ -3,7 +3,6 @@ const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
 const InvariantError = require('../../exceptions/InvariantError');
 const NotFoundError = require('../../exceptions/NotFoundError');
-const { mapDBToModel } = require('../../utils/song');
 
 class SongsService {
   constructor() {
@@ -38,11 +37,49 @@ class SongsService {
     return result.rows[0].id;
   }
 
-  async getSongs() {
-    const result = await this._pool.query(
-      'SELECT * FROM songs',
-    );
-    return result.rows.map(mapDBToModel);
+  async getSongsByAlbumId(id) {
+    const query = {
+      text: 'SELECT id,title,performer FROM songs WHERE albumid = $1',
+      values: [id],
+    };
+    const result = await this._pool.query(query);
+
+    return result.rows;
+  }
+
+  async getSong(title, performer) {
+    let query = '';
+    if (title && performer) {
+      query = {
+        text: 'SELECT id,title,performer FROM songs WHERE LOWER(title) LIKE $1 AND LOWER(performer) LIKE $2',
+        values: [
+          `%${title.toLowerCase()}%`,
+          `%${performer.toLowerCase()}%`,
+        ],
+      };
+    } else if (title) {
+      query = {
+        text: 'SELECT id,title,performer FROM songs WHERE LOWER(title) LIKE $1',
+        values: [
+          `%${title.toLowerCase()}%`,
+        ],
+      };
+    } else if (performer) {
+      query = {
+        text: 'SELECT id,title,performer FROM songs WHERE LOWER(performer) LIKE $1',
+        values: [
+          `%${performer.toLowerCase()}%`,
+        ],
+      };
+    } else {
+      query = 'SELECT id,title,performer FROM songs';
+    }
+
+    const result = await this._pool.query(query);
+    if (!result.rows.length) {
+      throw new NotFoundError('Lagu tidak ditemukan');
+    }
+    return result.rows;
   }
 
   async getSongById(id) {
@@ -54,7 +91,7 @@ class SongsService {
     if (!result.rows.length) {
       throw new NotFoundError('Lagu tidak ditemukan');
     }
-    return result.rows.map(mapDBToModel)[0];
+    return result.rows[0];
   }
 
   async editSongById(
@@ -71,7 +108,6 @@ class SongsService {
     if (!result.rows.length) {
       throw new NotFoundError('Gagal memperbarui lagu. Id tidak ditemukan');
     }
-    return result.rows.forEach(mapDBToModel);
   }
 
   async deleteSongById(id) {
