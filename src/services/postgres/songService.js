@@ -37,38 +37,28 @@ class SongsService {
     return result.rows[0].id;
   }
 
-  async getSongByAlbumId(id) {
-    const query = {
-      text: 'select id,title,performer from songs WHERE "albumId" = $1',
-      values: [id],
-    };
-    const result = await this._pool.query(query);
-
-    return result.rows;
-  }
-
   async getSong(title, performer) {
     let query = '';
     if (title && performer) {
       query = {
         text: 'SELECT id,title,performer FROM songs WHERE LOWER(title) LIKE $1 AND LOWER(performer) LIKE $2',
         values: [
-          `%${title.toLowerCase()}%`,
-          `%${performer.toLowerCase()}%`,
+          `%${title}%`,
+          `%${performer}%`,
         ],
       };
     } else if (title) {
       query = {
         text: 'SELECT id,title,performer FROM songs WHERE LOWER(title) LIKE $1',
         values: [
-          `%${title.toLowerCase()}%`,
+          `%${title}%`,
         ],
       };
     } else if (performer) {
       query = {
         text: 'SELECT id,title,performer FROM songs WHERE LOWER(performer) LIKE $1',
         values: [
-          `%${performer.toLowerCase()}%`,
+          `%${performer}%`,
         ],
       };
     } else {
@@ -92,6 +82,16 @@ class SongsService {
       throw new NotFoundError('Lagu tidak ditemukan');
     }
     return result.rows[0];
+  }
+
+  async getSongByAlbumId(id) {
+    const query = {
+      text: 'select id,title,performer from songs WHERE "albumId" = $1',
+      values: [id],
+    };
+    const result = await this._pool.query(query);
+
+    return result.rows;
   }
 
   async editSongById(
