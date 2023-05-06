@@ -28,10 +28,13 @@ class playlistsService {
 
   async getPlaylist(owner) {
     const query = {
-      text: `SELECT playlists.id, playlists.name, users.username FROM playlists
-      LEFT JOIN users ON users.id = playlists.owner
-      LEFT JOIN collaborations ON  collaborations.playlist_id = playlists.id 
-      WHERE playlists.owner= $1 OR collaborations.user_id = $1`,
+      text: `SELECT playlists.id, playlists.name, users.username 
+      FROM playlists
+      LEFT JOIN users ON playlists.owner = users.id 
+      LEFT JOIN collaborations 
+      ON playlists.id = collaborations.playlist_id 
+      WHERE playlists.owner = $1 
+      OR collaborations.user_id = $1`,
       values: [owner],
     };
     const result = await this._pool.query(query);
@@ -51,7 +54,18 @@ class playlistsService {
     };
     const result = await this._pool.query(query);
 
-    return result.rows[0];
+    return result.rows;
+  }
+
+  async getOwnerPlaylistById(playlistId) {
+    const query = {
+      text: 'SELECT playlists.owner FROM playlists WHERE id = $1',
+      values: [playlistId],
+    };
+
+    const result = await this._pool.query(query);
+
+    return result.rows[0].owner;
   }
 
   async deletePlaylistById(id, owner) {
@@ -95,7 +109,5 @@ class playlistsService {
       }
     }
   }
-
-  
 }
 module.exports = playlistsService;

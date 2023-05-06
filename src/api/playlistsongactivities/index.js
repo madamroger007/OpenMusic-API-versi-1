@@ -5,11 +5,11 @@ module.exports = {
   name: 'playlistSongsActivities',
   version: '1.0.0',
   register: async (server, {
-    PlaylistSongActivities,
+    PlaylistSongActivitiesServices,
     PlaylistsServices,
   }) => {
     const playlistSongActivitiesHandler = new PlaylistSongActivitiesHandler(
-      PlaylistSongActivities,
+      PlaylistSongActivitiesServices,
       PlaylistsServices,
     );
     server.route(routes(playlistSongActivitiesHandler));

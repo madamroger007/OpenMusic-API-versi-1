@@ -49,7 +49,7 @@ const init = async () => {
   const songServices = new songsService();
   const CollaborationsServices = new CollaborationsService();
   const PlaylistsServices = new PlaylistsService(CollaborationsServices);
-  const PlaylistSongServices = new PlaylistSongsService(collaborations);
+  const PlaylistSongServices = new PlaylistSongsService(CollaborationsServices);
   const PlaylistSongActivitiesServices = new PlaylistSongActivitiesService();
   const UserServices = new UsersService();
   const authenticationsServices = new AuthenticationsService();
@@ -72,7 +72,7 @@ const init = async () => {
   ]);
 
   server.auth.strategy('openmusicapp_jwt', 'jwt', {
-    keys: 'process.env.ACCESS_TOKEN_KEY',
+    keys: process.env.ACCESS_TOKEN_KEY,
     verify: {
       aud: false,
       iss: false,

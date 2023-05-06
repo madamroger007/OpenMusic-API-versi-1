@@ -28,17 +28,15 @@ class PlaylistsHandler {
   }
 
   // GET
-  async getPlaylistsHandler(request, h) {
+  async getPlaylistsHandler(request) {
     const { id: credentialId } = request.auth.credentials;
     const playlists = await this._service.getPlaylist(credentialId);
-    const response = h.response({
+    return {
       status: 'success',
       data: {
         playlists,
       },
-    });
-    response.code(200);
-    return response;
+    };
   }
 
   // DELETE
@@ -47,7 +45,7 @@ class PlaylistsHandler {
     const { id: credentialId } = request.auth.credentials;
 
     await this._service.verifyPlaylistOwner(id, credentialId);
-    await this._service.deletePlaylistById(id);
+    await this._service.deletePlaylistById(id, credentialId);
 
     return {
       status: 'success',

@@ -8,7 +8,7 @@ class PlaylistSongActivitiesHandler {
     autoBind(this);
   }
 
-  async getActivitiesHandler(request, h) {
+  async getActivitiesHandler(request) {
     const { id: playlistId } = request.params;
     const { id: credentialId } = request.auth.credentials;
 
@@ -17,9 +17,7 @@ class PlaylistSongActivitiesHandler {
       credentialId,
     );
 
-    const activities = await this._playlistsongactivitiesservice.getActivitiesFromPlaylist(
-      playlistId,
-    );
+    const activities = await this._playlistsongactivitiesservice.getActivitiesFromPlaylist(playlistId);
     return {
       status: 'success',
       data: {

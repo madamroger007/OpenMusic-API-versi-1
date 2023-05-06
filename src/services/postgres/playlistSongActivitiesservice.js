@@ -2,13 +2,11 @@ const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
 const InvariantError = require('../../exceptions/InvariantError');
 const NotFoundError = require('../../exceptions/NotFoundError');
-const AuthorizationError = require('../../exceptions/AuthorizationError');
 const { mapDBToModelPlaylistActivities } = require('../../utils/playlistActivies');
 
 class PlaylistSongActivitiesService {
-  constructor(collaborationsService) {
+  constructor() {
     this._pool = new Pool();
-    this._collaborationService = collaborationsService;
   }
 
   async postActivity(playlistId, songId, userId, action) {
@@ -32,14 +30,16 @@ class PlaylistSongActivitiesService {
   async getActivitiesFromPlaylist(playlistId) {
     const query = {
       text: `SELECT users.username, songs.title, playlists_song_activities.action, playlists_song_activities.time FROM playlists_song_activities
-          RIGHT JOIN users on users.id = playlists_song_activities.user_id
-          RIGHT JOIN songs on songs.id = playlists_song_activities.song_id
+          RIGHT JOIN users ON users.id = playlists_song_activities.user_id
+          RIGHT JOIN songs ON songs.id = playlists_song_activities.song_id
           WHERE playlists_song_activities.playlist_id = $1`,
       values: [playlistId],
     };
 
     const result = await this._pool.query(query);
-
+    if (!result.rows.length) {
+      throw new NotFoundError('playlist Lagu tidak ditemukan');
+    }
     return result.rows.map(mapDBToModelPlaylistActivities);
   }
 }
