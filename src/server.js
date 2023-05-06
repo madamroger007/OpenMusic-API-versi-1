@@ -25,9 +25,32 @@ const AuthenticationsService = require('./services/postgres/AuthenticationsServi
 const TokenManager = require('./tokenize/TokenManager');
 const AuthenticationsValidator = require('./validator/authentications');
 
+// playlists
+const playlists = require('./api/playlists');
+const PlaylistsService = require('./services/postgres/PlaylistsService');
+const PlaylistsValidator = require('./validator/playlists');
+
+// Playlist Song
+const playlistSongs = require('./api/playlistsong');
+const PlaylistSongsService = require('./services/postgres/playlistSongService');
+const PlaylistSongValidator = require('./validator/playlistsong');
+
+// Playlist Song Activities
+const playlistSongActivities = require('./api/playlistsongactivities');
+const PlaylistSongActivitiesService = require('./services/postgres/playlistSongActivitiesservice')
+
+// Collaboration
+const collaborations = require('./api/collaborations');
+const CollaborationsService = require('./services/postgres/CollaborationsService');
+const CollaborationsValidator = require('./validator/collaborations');
+
 const init = async () => {
   const albumServices = new albumService();
   const songServices = new songsService();
+  const CollaborationsServices = new CollaborationsService();
+  const PlaylistsServices = new PlaylistsService(CollaborationsServices);
+  const PlaylistSongServices = new PlaylistSongsService(collaborations);
+  const PlaylistSongActivitiesServices = new PlaylistSongActivitiesService();
   const UserServices = new UsersService();
   const authenticationsServices = new AuthenticationsService();
 
@@ -93,6 +116,37 @@ const init = async () => {
       tokenManager: TokenManager,
       validator: AuthenticationsValidator,
     },
+  }, {
+    plugin: playlists,
+    options: {
+      service: PlaylistsServices,
+      validator: PlaylistsValidator,
+    },
+  },
+  {
+    plugin: playlistSongs,
+    options: {
+      PlaylistSongActivitiesServices,
+      PlaylistSongServices,
+      songServices,
+      PlaylistsServices,
+      validator: PlaylistSongValidator,
+    },
+  },
+  {
+    plugin: playlistSongActivities,
+    options: {
+      PlaylistSongActivitiesServices,
+      PlaylistsServices,
+    },
+  },
+  {
+    plugin: collaborations,
+    options: {
+      CollaborationsServices,
+      PlaylistsServices,
+      validator: CollaborationsValidator,
+    },
   },
   ]);
 
@@ -113,6 +167,8 @@ const init = async () => {
       if (!response.isServer) {
         return h.continue;
       }
+
+       console.log(response);
       // penanganan server error sesuai kebutuhan
       const newResponse = h.response({
         status: 'error',
