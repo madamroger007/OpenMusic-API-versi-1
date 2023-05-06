@@ -138,14 +138,13 @@ class SongsService {
 
   async getSongsByPlaylistId(playlistId) {
     const query = {
-      text: `SELECT songs.id, songs.title, songs.performer FROM songs
-        JOIN playlist_songs ON songs.id = playlist_songs.song_id
-        JOIN playlists ON playlist_songs.playlist_id = playlists.id
-        WHERE playlist_songs.playlist_id = $1`,
+      text: `SELECT songs.id, songs.title, songs.performer FROM playlist_songs
+      LEFT JOIN songs ON songs.id = playlist_songs.song_id
+      WHERE playlist_songs.playlist_id = $1`,
       values: [playlistId],
     };
     const result = await this._pool.query(query);
-    return result.rows.map(mapDBToModelPlaylistSongs);
+    return result.rows;
   }
 }
 module.exports = SongsService;

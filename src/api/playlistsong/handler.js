@@ -25,15 +25,8 @@ class PlaylistSongHandler {
     const { id: playlistId } = request.params;
     const { songId } = request.payload;
     const { id: credentialId } = request.auth.credentials;
-
-    await this._playlistSongsService.verifySong(songId);
     await this._playlistsService.verifyPlaylistAccess(playlistId, credentialId);
-
-    const playlistSongId = await this._playlistSongsService.addPlaylistSong(
-      playlistId,
-      songId,
-    );
-
+    await this._playlistSongsService.verifySong(songId);
     // activity
     await this._songsService.getSongById(songId);
     await this._playlistSongActivityService.postActivity(
@@ -41,6 +34,10 @@ class PlaylistSongHandler {
       songId,
       credentialId,
       'add',
+    );
+    const playlistSongId = await this._playlistSongsService.addPlaylistSong(
+      playlistId,
+      songId,
     );
 
     const response = h.response({
@@ -64,7 +61,6 @@ class PlaylistSongHandler {
     );
 
     const playlist = await this._playlistsService.getPlaylistById(
-      credentialId,
       playlistId,
     );
 
@@ -83,8 +79,10 @@ class PlaylistSongHandler {
     const { id: playlistId } = request.params;
     const { songId } = request.payload;
     const { id: credentialId } = request.auth.credentials;
+    await this._playlistsService.verifyPlaylistAccess(playlistId, credentialId);
 
     await this._songsService.getSongById(songId);
+    await this._playlistSongsService.deletePlaylistSong(songId, playlistId);
     await this._playlistSongActivityService.postActivity(
       playlistId,
       songId,
@@ -92,12 +90,6 @@ class PlaylistSongHandler {
       'delete',
     );
 
-    const owner = await this._playlistsService.getOwnerPlaylistById(playlistId);
-    if (owner !== credentialId) {
-      throw new AuthorizationError('Anda tidak berhak menghapus lagu di playlist');
-    }
-
-    await this._playlistSongsService.deletePlaylistSong(songId);
     return {
       status: 'success',
       message: 'Lagu pada playlist berhasil dihapus',
