@@ -1,6 +1,4 @@
-/* eslint-disable no-underscore-dangle */
 const autoBind = require('auto-bind');
-const AuthorizationError = require('../../exceptions/AuthorizationError');
 
 class PlaylistSongHandler {
   constructor(

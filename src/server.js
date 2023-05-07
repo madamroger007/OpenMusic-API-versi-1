@@ -1,4 +1,3 @@
-/* eslint-disable new-cap */
 require('dotenv').config();
 
 const Jwt = require('@hapi/jwt');

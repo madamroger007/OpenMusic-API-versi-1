@@ -42,7 +42,7 @@ class CollaborationsHandler {
 
     await this._playlistsService.verifyPlaylistOwner(playlistId, credentialId);
     await this._collaborationsService.verifyCollaborator(playlistId, userId);
-
+    await this._collaborationsService.deleteCollaboration(playlistId, userId);
     return {
       status: 'success',
       message: 'Kolaborasi berhasil dihapus',
