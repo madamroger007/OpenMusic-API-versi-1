@@ -2,6 +2,9 @@ require('dotenv').config();
 
 const Jwt = require('@hapi/jwt');
 const Hapi = require('@hapi/hapi');
+const path = require('path');
+const Inert = require('@hapi/inert');
+
 // albums
 const albums = require('./api/albums');
 const albumService = require('./services/postgres/albumService');
@@ -36,12 +39,23 @@ const PlaylistSongValidator = require('./validator/playlistsong');
 
 // Playlist Song Activities
 const playlistSongActivities = require('./api/playlistsongactivities');
-const PlaylistSongActivitiesService = require('./services/postgres/playlistSongActivitiesservice')
+const PlaylistSongActivitiesService = require('./services/postgres/playlistSongActivitiesservice');
 
 // Collaboration
 const collaborations = require('./api/collaborations');
 const CollaborationsService = require('./services/postgres/CollaborationsService');
 const CollaborationsValidator = require('./validator/collaborations');
+
+// Exports
+const _exports = require('./api/exports');
+const ProducerService = require('./services/rabbitmq/ProducerService');
+const ExportsValidator = require('./validator/exports');
+
+// cover
+const cover = require('./api/covers');
+const StorageService = require('./services/storage/StorageService');
+const CoverValidator = require('./validator/covers');
+const CoverAlbumService = require('./services/postgres/coverAlbumService');
 
 const init = async () => {
   const albumServices = new albumService();
@@ -51,7 +65,9 @@ const init = async () => {
   const PlaylistSongServices = new PlaylistSongsService(CollaborationsServices);
   const PlaylistSongActivitiesServices = new PlaylistSongActivitiesService();
   const UserServices = new UsersService();
+  const CoverAlbumServices = new CoverAlbumService();
   const authenticationsServices = new AuthenticationsService();
+  const storageService = new StorageService(path.resolve(__dirname, 'api/covers/file/images'));
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -67,6 +83,9 @@ const init = async () => {
   await server.register([
     {
       plugin: Jwt,
+    },
+    {
+      plugin: Inert,
     },
   ]);
 
@@ -147,6 +166,22 @@ const init = async () => {
       validator: CollaborationsValidator,
     },
   },
+  {
+    plugin: _exports,
+    options: {
+      PlaylistsServices,
+      ProducerService,
+      validator: ExportsValidator,
+    },
+  },
+  {
+    plugin: cover,
+    options: {
+      storageService,
+      CoverAlbumServices,
+      validator: CoverValidator,
+    },
+  },
   ]);
 
   server.ext('onPreResponse', (request, h) => {
@@ -167,7 +202,7 @@ const init = async () => {
         return h.continue;
       }
 
-       console.log(response);
+      console.log(response);
       // penanganan server error sesuai kebutuhan
       const newResponse = h.response({
         status: 'error',
