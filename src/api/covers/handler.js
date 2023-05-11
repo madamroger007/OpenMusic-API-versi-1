@@ -15,7 +15,9 @@ class CoverHandler {
     this._validator.validateImageHeaders(cover.hapi.headers);
 
     const filename = await this._service.writeFile(cover, cover.hapi);
-    const coverURL = await this._cover.addCoverAlbum(id, `http://${process.env.HOST}:${process.env.PORT}/albums/covers/file/images/${filename}`);
+    const filelocation = `http://${process.env.HOST}:${process.env.PORT}/covers/images/${filename}`;
+    const coverURL = await this._cover.addCoverAlbum(id, filelocation);
+    
     const response = h.response({
       status: 'success',
       message: 'cover berhasil diunggah',
@@ -23,7 +25,9 @@ class CoverHandler {
         coverURL,
       },
     });
+    
     response.code(201);
+    console.log(coverURL);
     return response;
   }
 }
