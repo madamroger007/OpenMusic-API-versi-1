@@ -17,7 +17,7 @@ class CoverHandler {
     const filename = await this._service.writeFile(cover, cover.hapi);
     const filelocation = `http://${process.env.HOST}:${process.env.PORT}/covers/images/${filename}`;
     const coverURL = await this._cover.addCoverAlbum(id, filelocation);
-    
+
     const response = h.response({
       status: 'success',
       message: 'cover berhasil diunggah',
@@ -25,7 +25,7 @@ class CoverHandler {
         coverURL,
       },
     });
-    
+
     response.code(201);
     console.log(coverURL);
     return response;
