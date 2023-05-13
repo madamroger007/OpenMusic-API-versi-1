@@ -4,7 +4,7 @@ const Jwt = require('@hapi/jwt');
 const Hapi = require('@hapi/hapi');
 const path = require('path');
 const Inert = require('@hapi/inert');
-
+const config = require('./utils/config');
 // albums
 const albums = require('./api/albums');
 const albumService = require('./services/postgres/albumService');
@@ -51,13 +51,21 @@ const _exports = require('./api/exports');
 const ProducerService = require('./services/rabbitmq/ProducerService');
 const ExportsValidator = require('./validator/exports');
 
-// cover
+// Upload cover
 const cover = require('./api/covers');
 const StorageService = require('./services/storage/StorageService');
 const CoverValidator = require('./validator/covers');
 const CoverAlbumService = require('./services/postgres/coverAlbumService');
 
+//  AlbumLikes
+const albumLikes = require('./api/albumsLike');
+const AlbumLikeService = require('./services/postgres/albumLikeService');
+
+// cache
+const CacheService = require('./services/redis/CacheService');
+
 const init = async () => {
+  const cacheService = new CacheService();
   const albumServices = new albumService();
   const songServices = new songsService();
   const CollaborationsServices = new CollaborationsService();
@@ -68,10 +76,11 @@ const init = async () => {
   const CoverAlbumServices = new CoverAlbumService();
   const authenticationsServices = new AuthenticationsService();
   const storageService = new StorageService(path.resolve(__dirname, 'api/covers/file/images'));
+  const albumLikesServices = new AlbumLikeService(cacheService);
 
   const server = Hapi.server({
-    port: process.env.PORT,
-    host: process.env.HOST,
+    port: config.app.port,
+    host: config.app.host,
     routes: {
       cors: {
         origin: ['*'],
@@ -180,6 +189,13 @@ const init = async () => {
       storageService,
       CoverAlbumServices,
       validator: CoverValidator,
+    },
+  },
+  {
+    plugin: albumLikes,
+    options: {
+      albumLikesServices,
+      albumServices,
     },
   },
   ]);

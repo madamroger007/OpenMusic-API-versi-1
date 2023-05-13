@@ -44,6 +44,7 @@
     "picomatch": "^2.3.1",
     "pstree.remy": "^1.1.8",
     "readdirp": "^3.6.0",
+    "redis": "^4.6.6",
     "semver": "^5.7.1",
     "simple-update-notifier": "^1.1.0",
     "supports-color": "^5.5.0",

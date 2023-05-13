@@ -10,8 +10,8 @@ class CoverHandler {
   }
 
   async postCoverImageHandler(request, h) {
-    const { cover } = request.payload;
     const { id } = request.params;
+    const { cover } = request.payload;
     this._validator.validateImageHeaders(cover.hapi.headers);
 
     const filename = await this._service.writeFile(cover, cover.hapi);
@@ -27,7 +27,6 @@ class CoverHandler {
     });
 
     response.code(201);
-    console.log(coverURL);
     return response;
   }
 }
